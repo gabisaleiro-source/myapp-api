@@ -1,8 +1,13 @@
 const Rua = require('../models/Rua');
+const ruaPolicy = require('../policies/ruaPolicy');
 const ruaResource = require('../resources/RuaResource');
 
 exports.index = async (req, res) => {
     try {
+        if (!ruaPolicy.viewAny(req.user)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const ruas = await Rua.find().populate('freguesia');
 
         return res.status(200).json(ruas.map(ruaResource));
@@ -14,6 +19,10 @@ exports.index = async (req, res) => {
 
 exports.show = async (req, res) => {
     try {
+        if (!ruaPolicy.view(req.user, req.rua)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         return res.status(200).json(ruaResource(req.rua));
     } catch (error) {
         console.error('Erro no Show de Rua:', error);
@@ -23,6 +32,10 @@ exports.show = async (req, res) => {
 
 exports.store = async (req, res) => {
     try {
+        if (!ruaPolicy.create(req.user)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const rua = await Rua.create(req.body);
 
         const ruaComFreguesia = await Rua.findById(rua._id).populate('freguesia');
@@ -36,6 +49,10 @@ exports.store = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
+        if (!ruaPolicy.update(req.user, req.rua)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const updatedRua = await Rua.findByIdAndUpdate(
             req.rua._id,
             req.body,
@@ -54,6 +71,10 @@ exports.update = async (req, res) => {
 
 exports.destroy = async (req, res) => {
     try {
+        if (!ruaPolicy.delete(req.user, req.rua)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         await Rua.findByIdAndDelete(req.rua._id);
 
         return res.status(200).json({ message: 'Rua removida com sucesso' });

@@ -1,10 +1,19 @@
-exports.viewAny = () => true;
-exports.create = () => true;
+exports.viewAny = (user) => {
+    return !!user;
+};
+
+exports.create = (user) => {
+    return !!user;
+};
 
 exports.view = (user, processo) => {
-    return user && processo && (
+    if (!user || !processo) return false;
+
+    const userId = user._id || user.id;
+
+    return (
         user.isAdmin === true ||
-        user._id.toString() === processo.user.toString()
+        userId.toString() === processo.user.toString()
     );
 };
 

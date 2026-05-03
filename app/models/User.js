@@ -40,7 +40,6 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// 🔐 Hash automático antes de guardar
 userSchema.pre('save', async function() {
     if (!this.isModified('password')) return;
 
@@ -48,12 +47,10 @@ userSchema.pre('save', async function() {
     this.password = await bcrypt.hash(this.password, salt);
 });
 
-// 🔒 Método para comparar password (login)
 userSchema.methods.comparePassword = async function(password) {
     return bcrypt.compare(password, this.password);
 };
 
-// ❌ Remove password quando fizer res.json()
 userSchema.methods.toJSON = function() {
     const user = this.toObject();
     delete user.password;

@@ -2,8 +2,13 @@ const isAdmin = (user) => {
     return user && user.isAdmin === true;
 };
 
-exports.viewAny = () => true;
-exports.view = () => true;
+exports.viewAny = (user) => {
+    return !!user;
+};
+
+exports.view = (user, rua) => {
+    return !!user && !!rua;
+};
 
 exports.create = isAdmin;
 exports.update = isAdmin;

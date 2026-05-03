@@ -1,4 +1,5 @@
 const Processo = require('../models/Processo');
+const processoPolicy = require('../policies/processoPolicy');
 const processoResource = require('../resources/ProcessoResource');
 
 const populateProcesso = [
@@ -12,6 +13,10 @@ const populateProcesso = [
 
 exports.index = async (req, res) => {
     try {
+        if (!processoPolicy.viewAny(req.user)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const page = Math.max(parseInt(req.query.page) || 1, 1);
         const limit = 10;
         const skip = (page - 1) * limit;
@@ -42,6 +47,10 @@ exports.index = async (req, res) => {
 
 exports.store = async (req, res) => {
     try {
+        if (!processoPolicy.create(req.user)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const processo = await Processo.create({
             ...req.body,
             user: req.user.id
@@ -60,6 +69,10 @@ exports.store = async (req, res) => {
 
 exports.show = async (req, res) => {
     try {
+        if (!processoPolicy.view(req.user, req.processo)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         return res.status(200).json(processoResource(req.processo));
     } catch (error) {
         console.error('Erro no Show de Processo:', error);
@@ -69,6 +82,10 @@ exports.show = async (req, res) => {
 
 exports.update = async (req, res) => {
     try {
+        if (!processoPolicy.update(req.user, req.processo)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const processo = await Processo.findByIdAndUpdate(
             req.processo._id,
             req.body,
@@ -88,6 +105,10 @@ exports.update = async (req, res) => {
 
 exports.destroy = async (req, res) => {
     try {
+        if (!processoPolicy.delete(req.user, req.processo)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         await Processo.findByIdAndDelete(req.processo._id);
 
         return res.status(200).json({ message: 'Processo removido com sucesso' });

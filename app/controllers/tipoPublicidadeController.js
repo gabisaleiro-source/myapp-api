@@ -1,9 +1,13 @@
 const TipoPublicidade = require('../models/TipoPublicidade');
+const tipoPublicidadePolicy = require('../policies/tipoPublicidadePolicy');
 const tipoPublicidadeResource = require('../resources/TipoPublicidadeResource');
 
-// LISTAR TIPOS DE PUBLICIDADE
 exports.index = async (req, res) => {
     try {
+        if (!tipoPublicidadePolicy.viewAny(req.user)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const tipos = await TipoPublicidade.find().populate('processos');
 
         return res.status(200).json(tipos.map(tipoPublicidadeResource));
@@ -13,9 +17,12 @@ exports.index = async (req, res) => {
     }
 };
 
-// MOSTRAR UM TIPO DE PUBLICIDADE
 exports.show = async (req, res) => {
     try {
+        if (!tipoPublicidadePolicy.view(req.user, req.tipoPublicidade)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         return res.status(200).json(tipoPublicidadeResource(req.tipoPublicidade));
     } catch (error) {
         console.error(error);
@@ -23,9 +30,12 @@ exports.show = async (req, res) => {
     }
 };
 
-// CRIAR TIPO DE PUBLICIDADE
 exports.store = async (req, res) => {
     try {
+        if (!tipoPublicidadePolicy.create(req.user)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const tipoPublicidade = await TipoPublicidade.create(req.body);
 
         return res.status(201).json(tipoPublicidadeResource(tipoPublicidade));
@@ -35,9 +45,12 @@ exports.store = async (req, res) => {
     }
 };
 
-// ATUALIZAR TIPO DE PUBLICIDADE
 exports.update = async (req, res) => {
     try {
+        if (!tipoPublicidadePolicy.update(req.user, req.tipoPublicidade)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         const updatedTipo = await TipoPublicidade.findByIdAndUpdate(
             req.tipoPublicidade._id,
             req.body,
@@ -54,9 +67,12 @@ exports.update = async (req, res) => {
     }
 };
 
-// REMOVER TIPO DE PUBLICIDADE
 exports.destroy = async (req, res) => {
     try {
+        if (!tipoPublicidadePolicy.delete(req.user, req.tipoPublicidade)) {
+            return res.status(403).json({ error: 'Não autorizado' });
+        }
+
         await TipoPublicidade.findByIdAndDelete(req.tipoPublicidade._id);
 
         return res.status(200).json({ message: 'Tipo de publicidade removido com sucesso' });
